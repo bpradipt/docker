@@ -3,15 +3,14 @@
 DEST=$1
 
 PKGVERSION="${VERSION//-/'~'}"
-# if we have a "-dev" suffix or have change in Git, let's make this package version more complex so it works better
-if [[ "$VERSION" == *-dev ]] || [ -n "$(git status --porcelain)" ]; then
-	GIT_UNIX="$(git log -1 --pretty='%at')"
-	GIT_DATE="$(date --date "@$GIT_UNIX" +'%Y%m%d.%H%M%S')"
-	GIT_COMMIT="$(git log -1 --pretty='%h')"
-	GIT_VERSION="git${GIT_DATE}.0.${GIT_COMMIT}"
-	# GIT_VERSION is now something like 'git20150128.112847.0.17e840a'
-	PKGVERSION="$PKGVERSION~$GIT_VERSION"
-fi
+
+GIT_UNIX="$(git log -1 --pretty='%at')"
+GIT_DATE="$(date --date "@$GIT_UNIX" +'%Y%m%d')"
+GIT_COMMIT="$(git log -1 --pretty='%h')"
+GIT_VERSION="git${GIT_DATE}-${GIT_COMMIT}"
+
+# GIT_VERSION is now something like 'git20150128-17e840a'
+PKGVERSION="$PKGVERSION~$GIT_VERSION"
 
 # $ dpkg --compare-versions 1.5.0 gt 1.5.0~rc1 && echo true || echo false
 # true
@@ -75,9 +74,9 @@ bundle_ubuntu() {
 	done
 
 	# Copy the binary
-	# This will fail if the binary bundle hasn't been built
+	# This will fail if the static gccgo binary bundle hasn't been built
 	mkdir -p $DIR/usr/bin
-	cp $DEST/../binary/docker-$VERSION $DIR/usr/bin/docker
+	cp $DEST/../gccgo/docker-$VERSION $DIR/usr/bin/docker
 
 	# Generate postinst/prerm/postrm scripts
 	cat > $DEST/postinst <<'EOF'
@@ -137,9 +136,9 @@ EOF
 		# switch directories so we create *.deb in the right folder
 		cd $DEST
 
-		# create lxc-docker-VERSION package
+		# create docker.io-VERSION package
 		fpm -s dir -C $DIR \
-			--name lxc-docker-$VERSION --version "$PKGVERSION" \
+			--name docker.io --version "$PKGVERSION" \
 			--after-install $DEST/postinst \
 			--before-remove $DEST/prerm \
 			--after-remove $DEST/postrm \
@@ -153,13 +152,12 @@ EOF
 			--deb-recommends 'cgroupfs-mount | cgroup-lite' \
 			--description "$PACKAGE_DESCRIPTION" \
 			--maintainer "$PACKAGE_MAINTAINER" \
-			--conflicts docker \
-			--conflicts docker.io \
+			--conflicts lxc-docker \
 			--conflicts lxc-docker-virtual-package \
-			--provides lxc-docker \
-			--provides lxc-docker-virtual-package \
-			--replaces lxc-docker \
-			--replaces lxc-docker-virtual-package \
+			--provides docker.io \
+			--provides docker.io-virtual-package \
+			--replaces docker.io \
+			--replaces docker.io-virtual-package \
 			--url "$PACKAGE_URL" \
 			--license "$PACKAGE_LICENSE" \
 			--config-files /etc/udev/rules.d/80-docker.rules \
@@ -170,17 +168,6 @@ EOF
 			-t deb .
 		# TODO replace "Suggests: cgroup-lite" with "Recommends: cgroupfs-mount | cgroup-lite" once cgroupfs-mount is available
 
-		# create empty lxc-docker wrapper package
-		fpm -s empty \
-			--name lxc-docker --version "$PKGVERSION" \
-			--architecture "$PACKAGE_ARCHITECTURE" \
-			--depends lxc-docker-$VERSION \
-			--description "$PACKAGE_DESCRIPTION" \
-			--maintainer "$PACKAGE_MAINTAINER" \
-			--url "$PACKAGE_URL" \
-			--license "$PACKAGE_LICENSE" \
-			--deb-compression gz \
-			-t deb
 	)
 
 	# clean up after ourselves so we have a clean output directory
