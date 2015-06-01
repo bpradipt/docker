@@ -169,6 +169,7 @@ type Info struct {
 	Name               string
 	Labels             []string
 	ExperimentalBuild  bool
+	Architecture       string
 }
 
 // This struct is a temp struct used by execStart

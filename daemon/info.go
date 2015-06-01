@@ -86,6 +86,7 @@ func (daemon *Daemon) SystemInfo() (*types.Info, error) {
 		DockerRootDir:      daemon.Config().Root,
 		Labels:             daemon.Config().Labels,
 		ExperimentalBuild:  utils.ExperimentalBuild(),
+		Architecture:       runtime.GOARCH,
 	}
 
 	if httpProxy := os.Getenv("http_proxy"); httpProxy != "" {

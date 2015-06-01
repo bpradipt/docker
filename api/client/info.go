@@ -43,6 +43,7 @@ func (cli *DockerCli) CmdInfo(args ...string) error {
 	fmt.Fprintf(cli.out, "Total Memory: %s\n", units.BytesSize(float64(info.MemTotal)))
 	fmt.Fprintf(cli.out, "Name: %s\n", info.Name)
 	fmt.Fprintf(cli.out, "ID: %s\n", info.ID)
+	fmt.Fprintf(cli.out, "Architecture: %s\n", info.Architecture)
 
 	if info.Debug {
 		fmt.Fprintf(cli.out, "Debug mode (server): %v\n", info.Debug)
