@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/davecheney/profile"
 	"github.com/docker/docker/autogen/dockerversion"
 	"github.com/docker/docker/builder"
 	"github.com/docker/docker/builtins"
@@ -81,6 +82,7 @@ func mainDaemon() {
 		flag.Usage()
 		return
 	}
+	defer profile.Start(profile.CPUProfile).Stop()
 	eng := engine.New()
 	signal.Trap(eng.Shutdown)
 
