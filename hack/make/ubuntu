@@ -137,9 +137,9 @@ EOF
 		# create docker.io-VERSION package
 		fpm -s dir -C $DIR \
 			--name docker.io --version "$PKGVERSION" \
-			--after-install $DEST/postinst \
-			--before-remove $DEST/prerm \
-			--after-remove $DEST/postrm \
+			--after-install $ABS_DEST/postinst \
+			--before-remove $ABS_DEST/prerm \
+			--after-remove $ABS_DEST/postrm \
 			--architecture "$PACKAGE_ARCHITECTURE" \
 			--prefix / \
 			--depends iptables \
